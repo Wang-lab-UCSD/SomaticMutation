@@ -26,9 +26,9 @@ Two input files are required.
 
 #------------------------Software and Packages---------------------------
 
-1. R. Required packages are: pracma and mixtools 
+1. R >3.5. Required packages are: pracma and mixtools 
 
-2. Python. Required packages are: pandas, matplotlib, numpy, scipy, keras,
+2. Python2.7. Required packages are: pandas, matplotlib, numpy, scipy, keras,
    sklearn, tensorflow,statsmodels.
 
 3. Bedtools. Please use the versions earlier than 2.19.0. Suggested version
@@ -36,6 +36,10 @@ Two input files are required.
    I will re-write this part of code to remove the version limitation.
 
 4. Samtools. 
+
+5. Tensorflow-gpu-1.1.14
+
+6. keras-1.x.x
 
 
 #-----------------------------How to use-----------------------------------------
