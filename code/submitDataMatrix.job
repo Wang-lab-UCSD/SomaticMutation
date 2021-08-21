@@ -1,0 +1,46 @@
+#!/bin/bash
+###SBATCH -p compute0                   # job submitted to cpu
+###SBATCH -N 1                      # 
+###SBATCH --ntasks-per-node=1       # 
+#SBATCH --cpus-per-task=1         # 
+#SBATCH --mem 50G
+#SBATCH -t 15-00:00:00               # 
+###SBATCH --array=1
+###SBATCH -J M_re
+#SBATCH --output=Pre-%A_%a.out
+
+
+BASEDIR=${Out}
+cd $Out
+#PM2=$(sed -n -e "$SLURM_ARRAY_TASK_ID p" "$BASEDIR"${PMFILE} | awk '{print $2}')
+# PM3=$(sed -n -e "$SLURM_ARRAY_TASK_ID p" "$BASEDIR"${PMFILE} | awk '{print $3}')
+# PM4=$(sed -n -e "$SLURM_ARRAY_TASK_ID p" "$BASEDIR"${PMFILE} | awk '{print $4}')
+# PM5=$(sed -n -e "$SLURM_ARRAY_TASK_ID p" "$BASEDIR"${PMFILE} | awk '{print $5}')
+# PM6=$(sed -n -e "$SLURM_ARRAY_TASK_ID p" "$BASEDIR"${PMFILE} | awk '{print $6}')
+# PM7=$(sed -n -e "$SLURM_ARRAY_TASK_ID p" "$BASEDIR"${PMFILE} | awk '{print $7}')
+# PM8=$(sed -n -e "$SLURM_ARRAY_TASK_ID p" "$BASEDIR"${PMFILE} | awk '{print $8}')
+# PM4=2000
+# PM9=7
+
+
+TotalReads=($($SamtoolFolder'/samtools' view -c -F 260 $OpenChromFile))
+
+$RFolder'/Rscript' $ScriptFolder'/PrepareMotifDHSDataMatrix_median.R' $Out $TotalReads $L
+if [ $? -eq 0 ]; then
+    echo OK
+else
+    echo FAIL
+    echo 'submit again'
+    sleep 0.5h
+    $RFolder'/Rscript' $ScriptFolder'/PrepareMotifDHSDataMatrix_median.R' $Out $TotalReads $L
+    if [ $? -eq 0 ]; then
+        echo 'OK, alternative'
+    else
+        echo "Fail again try one more time"
+        sleep 0.5h
+        $RFolder'/Rscript' $ScriptFolder'/PrepareMotifDHSDataMatrix_median.R' $Out $TotalReads $L
+    fi   
+fi
+
+
+

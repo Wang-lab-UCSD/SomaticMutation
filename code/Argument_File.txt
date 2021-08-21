@@ -1,0 +1,17 @@
+##----Input folders and files--------------------
+ScriptFolder=/home/zmwang/SomaticMutationPrediction/BRCA-UK/Script_chromHMM_v10
+SNVFile=/home/zmwang/SomaticMutationPrediction/BRCA-UK/AllPatiant_SNV.bed
+OpenChromFile=/home/zmwang/Encode/hg19_normal_Chip-seq/bam/breast.epithelium_DHS.bam
+RegionFile=/home/zmwang/SomaticMutationPrediction/BRCA-FR/E027_15_coreMarks_mnemonics.bed
+Split=NO
+OutDir=/home/zmwang/SomaticMutationPrediction/BRCA-UK
+FimoPvalue=1e-05
+FiMOFolder=/share/Hg19FiMO
+##---job parameter----------------------------
+SLEEP=2s
+GPU=2
+##---Software bin folder------------------------
+RFolder=/opt/wangcluster/R/3.5.0/bin
+PythonFolder=/home/zmwang/anaconda2/bin
+BedtoolFolder=/home/zmwang/Software/bedtools-2.18.0/bin
+SamtoolFolder=/home/zmwang/anaconda2/bin

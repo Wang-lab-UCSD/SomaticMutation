@@ -1,0 +1,38 @@
+#!/bin/bash
+#SBATCH -p compute0                   # job submitted to cpu
+###SBATCH -N 1                      # 
+###SBATCH --ntasks-per-node=1       # 
+#SBATCH --cpus-per-task=1         # 
+#SBATCH --mem 50G
+#SBATCH -t 10-10:00:00               # 
+####SBATCH --array
+#SBATCH -J prep
+#SBATCH --output=prep-%A_%a.out
+
+Out='/home/zmwang/SomaticMutationPrediction/BRCA-EU/Falcon_chromHMM'
+
+cd $Out
+
+SNVfile='/home/zmwang/SomaticMutationPrediction/BRCA-EU/SplitRegionForMotif_L25_removeTreatment/AllPatiant_SNV.bed'
+OutName="BRCA-EU_DataSetForRF_specific.txt"
+
+RegionFile='/home/zmwang/SomaticMutationPrediction/mergeData/merge_chromHMM/merge/HyperRegion_withSpecific.bed'
+FiMOFolder='/share/Hg19FiMO'
+h=0
+BedtoolFolder='/home/zmwang/Software/bedtools-2.18.0/bin'
+
+ScriptFolder='/home/zmwang/HiCInteraction/HiC-Pro/GM12878/data_valid/DMCMmutationcluster/CLL_WGS/Script_chromHMM'
+
+FimoPvalue=1e-05
+
+
+
+python $ScriptFolder'/prep_DataMatrixForRandomForest.py' $SNVfile $RegionFile $Out $OutName $FiMOFolder $h $BedtoolFolder $FimoPvalue
+
+
+
+
+
+
+
+

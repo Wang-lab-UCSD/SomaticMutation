@@ -1,0 +1,26 @@
+#!/bin/bash
+###SBATCH -p compute0                   # job submitted to cpu
+###SBATCH -N 1                      # 
+###SBATCH --ntasks-per-node=1       # 
+#SBATCH --cpus-per-task=1         # 
+#SBATCH --mem 10G
+#SBATCH -t 15-00:00:00               # 
+###SBATCH --array=1
+###SBATCH -J M_re
+###SBATCH --output=M_re-%A_%a.out
+
+
+
+#PM2=$(sed -n -e "$SLURM_ARRAY_TASK_ID p" "$BASEDIR"${PMFILE} | awk '{print $2}')
+# PM3=$(sed -n -e "$SLURM_ARRAY_TASK_ID p" "$BASEDIR"${PMFILE} | awk '{print $3}')
+# PM4=$(sed -n -e "$SLURM_ARRAY_TASK_ID p" "$BASEDIR"${PMFILE} | awk '{print $4}')
+# PM5=$(sed -n -e "$SLURM_ARRAY_TASK_ID p" "$BASEDIR"${PMFILE} | awk '{print $5}')
+# PM6=$(sed -n -e "$SLURM_ARRAY_TASK_ID p" "$BASEDIR"${PMFILE} | awk '{print $6}')
+# PM7=$(sed -n -e "$SLURM_ARRAY_TASK_ID p" "$BASEDIR"${PMFILE} | awk '{print $7}')
+# PM8=$(sed -n -e "$SLURM_ARRAY_TASK_ID p" "$BASEDIR"${PMFILE} | awk '{print $8}')
+# PM4=2000
+# PM9=7
+
+
+cd $Dir2
+$BedtoolFolder'/bedtools' coverage -counts -abam $OpenChromFile -b ${Dir2}'SomaticRegion_Motif_hg19.bed' > "${Dir3}OpenChromatin_hg19_RPKM.bed"

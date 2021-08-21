@@ -1,0 +1,39 @@
+#!/bin/bash
+###SBATCH -p gpu                   # job submitted to cpu
+###SBATCH -N 1                      # 
+###SBATCH --ntasks-per-node=1       # 
+#SBATCH --cpus-per-task=1         # 
+#SBATCH --mem 50G
+#SBATCH -t 10-10:00:00               # 
+#SBATCH --array=1-23%6
+#SBATCH -J cont
+#SBATCH --output=cont-%A_%a.out
+
+cd $Out
+PM1=$(sed -n -e "$SLURM_ARRAY_TASK_ID p" $ScriptFolder'/hg19_ID.txt' | awk '{print $1}')  ### get the i th row 1st column from the "$BASEDIR"fastq_trim_sample_SRP071841.txt file; i = the ith job 
+
+
+Chr=$PM1
+RegionFile=$Out"SomaticRegion_Motif_hg19.bed"
+OutNew=$Out'MotifDHS_hg19'
+cd $OutNew
+
+
+$PythonFolder'/python' $ScriptFolder'/PrepareMotif_median.py' $Chr $RegionFile $OutNew $FiMOFolder $FimoPvalue
+
+if [ $? -eq 0 ]; then
+    echo OK
+else
+    echo FAIL
+    echo 'submit again'
+    sleep 0.5h
+    $PythonFolder'/python' $ScriptFolder'/PrepareMotif_median.py' $Chr $RegionFile $OutNew $FiMOFolder $FimoPvalue
+    if [ $? -eq 0 ]; then
+        echo 'OK, alternative'
+    else
+        echo "Fail again try one more time"
+        sleep 0.5h
+        $PythonFolder'/python' $ScriptFolder'/PrepareMotif_median.py' $Chr $RegionFile $OutNew $FiMOFolder $FimoPvalue
+    fi   
+fi
+

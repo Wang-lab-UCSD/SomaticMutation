@@ -1,0 +1,24 @@
+#!/bin/bash
+#SBATCH -p compute0                   # job submitted to cpu
+###SBATCH -N 1                      # 
+###SBATCH --ntasks-per-node=1       # 
+#SBATCH --cpus-per-task=1         # 
+#SBATCH --mem 40G
+#SBATCH -t 10-10:00:00               # 
+####SBATCH --array
+#SBATCH -J apply
+#####SBATCH --output=rpkm-%A_%a.out
+
+DataFile='/home/zmwang/HiCInteraction/HiC-Pro/GM12878/data_valid/DMCMmutationcluster/CLL_WGS/SplitRegionForMotif_L1500_MACS2/MotifDHS_hg19/MotifMedian_DHS_Data.txt'
+Out='/home/zmwang/HiCInteraction/HiC-Pro/GM12878/data_valid/DMCMmutationcluster/CLL_WGS/SplitRegionForMotif_L1500_MACS2/apply'
+ScriptFolder='/home/zmwang/HiCInteraction/HiC-Pro/GM12878/data_valid/DMCMmutationcluster/CLL_WGS/Script_chromHMM'
+ModelDir='/home/zmwang/HiCInteraction/HiC-Pro/GM12878/data_valid/DMCMmutationcluster/CLL_WGS/SplitRegionForMotif_L1500_MACS2/Normalize0-1_cluterMotif_Zscore'
+ModelName='CR_model_NodeSelf_MotifDHS_Epoch5_h0.1_'
+h=0.1 #Note that make sure h value are same in ModelName and h
+
+python $ScriptFolder'/TrainCRApply2OtherData.py' $DataFile $Out $ScriptFolder $ModelDir $ModelName $h $FDR
+
+
+
+
+

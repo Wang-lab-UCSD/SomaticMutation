@@ -1,0 +1,137 @@
+#!/bin/bash
+
+ArgumentFile=$1
+
+ScriptFolder=$(grep -hr "ScriptFolder=" $ArgumentFile | cut -f2 -d "=")
+echo "Script Folder is: "$ScriptFolder
+SNVFile=$(grep -hr "SNVFile=" $ArgumentFile | cut -f2 -d "=")
+echo "SNV file is: "$SNVFile
+OpenChromFile=$(grep -hr "OpenChromFile=" $ArgumentFile | cut -f2 -d "=")
+echo "OpenChromatin is: "$OpenChromFile
+
+RegionFile=$(grep -hr "RegionFile=" $ArgumentFile | cut -f2 -d "=")
+echo "RegionFile is: "$RegionFile
+
+
+Split=$(grep -hr "Split=" $ArgumentFile | cut -f2 -d "=")
+echo "Split is: "$Split
+
+
+
+OutDir=$(grep -hr "OutDir=" $ArgumentFile | cut -f2 -d "=")
+echo "Out Dir is: "$OutDir
+
+FimoPvalue=$(grep -hr "FimoPvalue=" $ArgumentFile | cut -f2 -d "=")
+echo "FiMO FimoPvalue is: "$FimoPvalue
+
+FiMOFolder=$(grep -hr "FiMOFolder=" $ArgumentFile | cut -f2 -d "=")
+echo "FiMO Folder is: "$FiMOFolder
+GPU=$(grep -hr "GPU=" $ArgumentFile | cut -f2 -d "=")
+echo "GPU is: "$GPU
+
+RFolder=$(grep -hr "RFolder=" $ArgumentFile | cut -f2 -d "=")
+echo "R bin folder is: "$RFolder
+PythonFolder=$(grep -hr "PythonFolder=" $ArgumentFile | cut -f2 -d "=")
+echo "Python bin folder is: "$PythonFolder
+BedtoolFolder=$(grep -hr "BedtoolFolder=" $ArgumentFile | cut -f2 -d "=")
+echo "Bedtools bin folder is: "$BedtoolFolder
+SamtoolFolder=$(grep -hr "SamtoolFolder=" $ArgumentFile | cut -f2 -d "=")
+echo "Samtools bin folder is: "$SamtoolFolder
+
+
+
+SLEEP=$(grep -hr "SLEEP=" $ArgumentFile | cut -f2 -d "=")
+
+
+Out=$OutDir'/Falcon_chromHMM_pvalue_'$FimoPvalue'/'
+mkdir -p $Out
+cd $Out
+pwd
+
+
+echo "The job will start in "$SLEEP
+sleep $SLEEP
+
+
+
+
+##---Don't modify the following parts----------
+##---Create the folders for results------------
+
+
+
+echo "prepare SNV regions...."
+jobID=$(sbatch --export=RFolder=$RFolder,Out=$Out,SNVFile=$SNVFile,ScriptFolder=$ScriptFolder,BedtoolFolder=$BedtoolFolder,RegionFile=$RegionFile,Split=$Split $ScriptFolder'/SplitDonor.job')
+sbr=$jobID
+if [[ "$sbr" =~ Submitted\ batch\ job\ ([0-9]+) ]]; then
+    echo "The jobid is: ""${BASH_REMATCH[1]}"
+    jobID=${BASH_REMATCH[1]}
+else
+    echo "sbatch failed"
+fi
+
+
+#----Somatic Mutation Regions done------------------
+
+
+
+
+mkdir -p $Out'MotifDHS_hg19/'
+
+##---prepare the Motif features for the somatic mutation regions-------------------------
+jobID2=$(sbatch --export=PythonFolder=$PythonFolder,Out=$Out,FiMOFolder=$FiMOFolder,ScriptFolder=$ScriptFolder,FimoPvalue=$FimoPvalue --dependency=afterok:$jobID --job-name="Mo"$NUMBER $ScriptFolder'/SubmitPrepareMotifCount.job')
+sbr=$jobID2
+if [[ "$sbr" =~ Submitted\ batch\ job\ ([0-9]+) ]]; then
+    echo "The jobid for Motif Feature preparation is ""${BASH_REMATCH[1]}"
+    jobID2=${BASH_REMATCH[1]}
+else
+    echo "sbatch failed"
+fi
+
+
+
+##---prepare the OpenChromatin features for the somatic mutation regions-------------------------
+
+Dir2=$Out
+Dir3=$Out'MotifDHS_hg19/'
+
+jobID3=$(sbatch --export=OpenChromFile=$OpenChromFile,BedtoolFolder=$BedtoolFolder,Dir2=$Dir2,Dir3=$Dir3,ScriptFolder=$ScriptFolder --dependency=afterok:$jobID --job-name="DH"$NUMBER $ScriptFolder'/DHS_RPKM.job')
+sbr=$jobID3
+if [[ "$sbr" =~ Submitted\ batch\ job\ ([0-9]+) ]]; then
+    echo "The jobid for OpenChromatin preparation is ""${BASH_REMATCH[1]}"
+    jobID3=${BASH_REMATCH[1]}
+else
+    echo "sbatch failed"
+fi
+
+
+##--prepare the data matrix for contextual regression------------------------------------------
+jobID4=$(sbatch --export=Out=$Out,RFolder=$RFolder,SamtoolFolder=$SamtoolFolder,OpenChromFile=$OpenChromFile,ScriptFolder=$ScriptFolder --dependency=afterok:$jobID2:$jobID3 --job-name="RE"$NUMBER $ScriptFolder'/submitDataMatrix.job')
+sbr=$jobID4
+if [[ "$sbr" =~ Submitted\ batch\ job\ ([0-9]+) ]]; then
+    echo "The jobid for the final data matrix preparation is ""${BASH_REMATCH[1]}"
+    jobID4=${BASH_REMATCH[1]}
+else
+    echo "sbatch failed"
+fi
+
+
+##----fit Contextual Regression Model------------------------------
+
+sbatch --export=Out=$Out,PythonFolder=$PythonFolder,GPU=$GPU,ScriptFolder=$ScriptFolder --dependency=afterok:$jobID4 --job-name="CR"$NUMBER $ScriptFolder'/subCR.job'
+echo "The job name for contextual regression model is ""CR"$NUMBER
+
+echo "all the jobs are submmited."
+echo "the CR result should be finished in a few hours, please check the created folder."
+
+
+
+
+
+
+
+
+
+
+
+

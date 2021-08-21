@@ -1,0 +1,59 @@
+#!/bin/bash
+#SBATCH -p gpu                # job submitted to cpu
+###SBATCH -N 1                      # 
+###SBATCH --ntasks-per-node=1       # 
+#SBATCH --cpus-per-task=1         # 
+#SBATCH --mem 40G
+#SBATCH -t 15-00:00:00               # 
+###SBATCH --array=1
+###SBATCH -J M_re
+#SBATCH --output=CR-%A_%a.out
+
+
+HOST=$(hostname)
+
+if [[ "$HOST" == "gpu-1-0" ]]; then
+    echo OK
+else
+    source /home/zmwang/bash_profileGPU-1-1
+fi
+
+
+BASEDIR=${Out}
+cd $Out
+
+mkdir -p $Out'Normalize0-1_cluterMotif_Zscore'
+
+Epoch=5
+
+$PythonFolder'/python' $ScriptFolder'/PredictionSomaticMutation_Motif_Median_DHS_CV_Normalized01_clusterMotif_Zscore.py' $Out'MotifDHS_hg19/MotifMedian_DHS_Data_FilterZero.txt' $Out $GPU $Epoch $ScriptFolder 
+
+if [ $? -eq 0 ]; then
+    echo OK
+else
+    $PythonFolder'/python' $ScriptFolder'/PredictionSomaticMutation_Motif_Median_DHS_CV_Normalized01_clusterMotif_Zscore.py' $Out'MotifDHS_hg19/MotifMedian_DHS_Data.txt' $Out $GPU $Epoch $ScriptFolder 
+fi
+
+
+Epoch=10
+
+$PythonFolder'/python' $ScriptFolder'/PredictionSomaticMutation_Motif_Median_DHS_CV_Normalized01_clusterMotif_Zscore.py' $Out'MotifDHS_hg19/MotifMedian_DHS_Data_FilterZero.txt' $Out $GPU $Epoch $ScriptFolder 
+
+if [ $? -eq 0 ]; then
+    echo OK
+else
+    $PythonFolder'/python' $ScriptFolder'/PredictionSomaticMutation_Motif_Median_DHS_CV_Normalized01_clusterMotif_Zscore.py' $Out'MotifDHS_hg19/MotifMedian_DHS_Data.txt' $Out $GPU $Epoch $ScriptFolder 
+fi
+
+
+
+Epoch=15
+
+$PythonFolder'/python' $ScriptFolder'/PredictionSomaticMutation_Motif_Median_DHS_CV_Normalized01_clusterMotif_Zscore.py' $Out'MotifDHS_hg19/MotifMedian_DHS_Data_FilterZero.txt' $Out $GPU $Epoch $ScriptFolder 
+
+if [ $? -eq 0 ]; then
+    echo OK
+else
+    $PythonFolder'/python' $ScriptFolder'/PredictionSomaticMutation_Motif_Median_DHS_CV_Normalized01_clusterMotif_Zscore.py' $Out'MotifDHS_hg19/MotifMedian_DHS_Data.txt' $Out $GPU $Epoch $ScriptFolder 
+fi
+
